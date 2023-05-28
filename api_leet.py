@@ -1,0 +1,83 @@
+# <div role="rowgroup">
+# <div role="row">
+#
+# <div role="cell"> (status) </div>
+# <div role="cell"> (title) 
+# .... 
+# <a href="/problems/{title-slug}/">
+# "{Number of problem}"
+# "{.}"
+# "{Title}"
+# ....
+# </div>
+# <div role="cell"> (solution) </div>
+# <div role="cell"> (acceptance) </div>
+# <div role="cell"> (difficulty) </div>
+# <div role="cell"> (frequency) </div>
+# </div> (row)
+# </div> (rowgroup)
+
+
+# no of pages
+# <nav role="navigation">
+# <button class="flex [...]">
+# {last button with text contains no of pages}
+# </button>
+# </nav>
+
+# https://leetcode.com/problemset/all/?page=1
+
+# ^ all this but leetcode gets calls from API/JS so it doesnt work :(
+
+# TODO: call with current username 
+
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import os
+import json
+
+url = 'https://leetcode.com/api/problems/algorithms/'
+r = requests.get(url)
+data = json.loads(r.text)
+df1 = pd.json_normalize(data, record_path = ['stat_status_pairs'])
+
+# df1.columns Index(['status', 'paid_only', 'is_favor', 'frequency', 'progress',
+#       'stat.question_id', 'stat.question__article__live',
+#       'stat.question__article__slug',
+#       'stat.question__article__has_video_solution', 'stat.question__title',
+#       'stat.question__title_slug', 'stat.question__hide', 'stat.total_acs',
+#       'stat.total_submitted', 'stat.frontend_question_id',
+#       'stat.is_new_question', 'difficulty.level'],
+#      dtype='object')
+
+# stat.frontend_question_id -> index order
+# stat.question_id -> ???
+
+#stat.question_id                                           2500
+#stat.question__title_slug    minimum-costs-using-the-train-line
+#stat.frontend_question_id                                  2361
+
+headers = ['stat.frontend_question_id', 'stat.question__title', 'stat.question__title_slug', 'difficulty.level', 'paid_only']
+df2 = pd.DataFrame(df1, columns=headers)
+
+df2 = df2.rename(columns={'stat.frontend_question_id': 'ID', 
+                          'stat.question__title': 'Title', 
+                          'stat.question__title_slug': 'Title Slug', 
+                          'difficulty.level': 'Difficulty', 
+                          'paid_only': 'premium'}) # -> THIS doesnt work yet, 'progress': 'solved'
+
+df2 = df2.sort_values(by="ID")
+
+diff_dict = {1: "Easy", 2: "Medium", 3: "Hard"}
+df2["Difficulty"].replace(diff_dict, inplace=True)
+
+path = os.getcwd() + '\\data\\' + 'problem_list.txt'
+df2.to_csv(path_or_buf=path ,index=False)
+
+path = os.getcwd() + '\\data\\' + 'ratings_clean.txt'
+df3 = pd.read_csv(path)
+
+df4 = df3.merge(df2, how="left")
+path = os.getcwd() + '\\data\\' + 'data.txt'
+df4.to_csv(path_or_buf=path, index=False)
