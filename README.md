@@ -5,6 +5,7 @@ Problems are indexed from easiest to hardest with respect to elo rating calulate
 
 Libraries in use: 
 - pandas
+
 Methods and libraries included in python:
 - tkinter
 - webbrowser
