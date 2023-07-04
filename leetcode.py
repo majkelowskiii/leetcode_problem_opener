@@ -27,7 +27,7 @@ class Leetcode:
 
         self.problem_diff = StringVar()
         ttk.Label(mainframe, textvariable=self.problem_diff, width=7).grid(column=3, row=4, sticky=(W, E))
-        ttk.Label(mainframe, text="Difficulty").grid(column=3, row=3, sticky=(W, E))
+        ttk.Label(mainframe, text="Diff").grid(column=3, row=3, sticky=(W, E))
 
 
         self.problem_id = StringVar()
@@ -36,7 +36,7 @@ class Leetcode:
 
         self.problem_name = StringVar()
         ttk.Label(mainframe, textvariable=self.problem_name, width = self.longest_title).grid(column=4, row=4, sticky=(W, E))
-        ttk.Label(mainframe, text="Problem name").grid(column=3, row=3, sticky=(W, E))
+        ttk.Label(mainframe, text="Problem name").grid(column=4, row=3, sticky=(W, E))
 
         ttk.Button(mainframe, text="Next", command=self.show_next_prob, width=15).grid(column=6, row=4, sticky=(W, E))
         ttk.Button(mainframe, text="Prev", command=self.show_prev_prob, width=15).grid(column=5, row=4, sticky=(W, E))
@@ -59,12 +59,28 @@ class Leetcode:
 
         ttk.Button(mainframe, text="Go To", command=self.goto_problem, width=15).grid(column=7, row=3, sticky=(W, E))
 
-        self.hide_premium_var = StringVar()
-        premium_checkbox = ttk.Checkbutton(mainframe, text="Hide premium", command=self.hide_premium,
-                                           variable=self.hide_premium_var, offvalue='show', onvalue='hide')
+        self.show_ac_var = BooleanVar(value=True)
+        premium_checkbox = ttk.Checkbutton(mainframe, text="Show accomplished", variable=self.show_ac_var)
         premium_checkbox.grid(column=1, row=2, sticky=(W, E))
-
         
+        self.show_premium_var = BooleanVar(value=True)
+        premium_checkbox = ttk.Checkbutton(mainframe, text="Show premium", variable=self.show_premium_var)
+        premium_checkbox.grid(column=1, row=3, sticky=(W, E))
+        
+        self.show_easy_var = BooleanVar(value=True)
+        premium_checkbox = ttk.Checkbutton(mainframe, text="Show Easy", variable=self.show_easy_var)
+        premium_checkbox.grid(column=1, row=4, sticky=(W, E))
+        
+        self.show_medium_var = BooleanVar(value=True)
+        premium_checkbox = ttk.Checkbutton(mainframe, text="Show Medium", variable=self.show_medium_var)
+        premium_checkbox.grid(column=1, row=5, sticky=(W, E))
+
+        self.show_hard_var = BooleanVar(value=True)
+        premium_checkbox = ttk.Checkbutton(mainframe, text="Show Hard", variable=self.show_hard_var)
+        premium_checkbox.grid(column=1, row=6, sticky=(W, E))
+        
+        ttk.Button(mainframe, text="Apply changes", command=self.set_show_status, width=15).grid(column=1, row=7, sticky=(W, E))
+
         self.problem_index = 0
         self.set_by_index()
 
@@ -90,8 +106,9 @@ class Leetcode:
 
     def set_by_ID(self):
         number = int(self.goto_choice.get()) #0-indexed vs 1-indexed
-        index = self.df.index[self.df["ID"] == number]
 
+        index = self.df.index[self.df["ID"] == number]
+        
         if not index.empty:
             self.problem_index = index[0]
             self.set_by_index()
@@ -128,7 +145,7 @@ class Leetcode:
         self.longest_title = lngst_title
 
     def read_ratings(self):
-        path = getcwd() + "\\data\\" + "data.txt"
+        path = getcwd() + "/data/" + "data.txt"
         self.data = pd.read_csv(path)
 
 
@@ -150,14 +167,31 @@ class Leetcode:
         self.set_by_index()
 
 
-    def hide_premium(self):
-        state = self.hide_premium_var.get()
+    def set_show_status(self):
         
-        if state == 'show':
-            self.df = self.data
-        elif state == 'hide':
-            self.df = self.data.loc[self.data['premium']==False]
-        
+        temp_df = self.data
+
+        if not self.show_ac_var.get():
+            temp_df = temp_df.loc[temp_df['status'] != 'ac']
+
+        if not self.show_premium_var.get():
+            temp_df = temp_df.loc[temp_df['premium'] == False]
+
+        diff = []
+
+        if self.show_easy_var.get():
+            diff.append('Easy')
+
+        if self.show_medium_var.get():
+            diff.append('Medium')
+
+        if self.show_hard_var.get():
+            diff.append('Hard')
+
+        if diff:
+            self.df = temp_df.loc[temp_df['Difficulty'].isin(diff)]
+
+        self.df = self.df.reset_index()
         self.set_by_index()
             
 
