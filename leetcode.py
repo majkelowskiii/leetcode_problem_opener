@@ -134,9 +134,6 @@ class Leetcode:
             self.problem_index = index[0]
             self.set_by_index()
 
-        else:
-            pass
-
     def goto_problem(self):
         number = int(self.goto_choice.get()) - 1  # 0-indexed vs 1-indexed
         # todo - validation https://tkdocs.com/tutorial/widgets.html#entry
