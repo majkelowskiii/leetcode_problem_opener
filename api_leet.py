@@ -33,33 +33,60 @@
 
 import json
 from pathlib import Path
+from typing import Any, Dict
 
 import pandas as pd
 import requests
+from model import Model
+from requests import Response
 
 url = "https://leetcode.com/api/problems/algorithms/"
+ratings_url = "https://raw.githubusercontent.com/zerotrac/leetcode_problem_rating/main/ratings.txt"
 data_dir: Path = Path.cwd() / "data"
 data_dir.mkdir(parents=True, exist_ok=True)
 cookie_path: Path = data_dir / "cookie.txt"
+ratings_path: Path = data_dir / "ratings.txt"
 clean_ratings_path: Path = data_dir / "ratings_clean.txt"
 problem_list_path: Path = data_dir / "problem_list.txt"
 data_output_path: Path = data_dir / "data.txt"
 
+headers = {}
 try:
-    with open(cookie_path, "r") as file:
-        cookie = file.read()
-
-    # cookie expired after few weeks
-    # needs to make sure that after copying cookie it contains no trailing whitespaces
-
+    with open(cookie_path, "r", encoding="utf-8") as file:
+        cookie: str = file.read().strip()
     headers = {"cookie": cookie}
-    r = requests.get(url, headers=headers)
-except:
-    r = requests.get(url)
+except OSError as e:
+    print(f"Error reading cookie: {e}")
+
+try:
+    req: Response = requests.get(ratings_url, timeout=5)
+    with open(ratings_path, "w+", encoding="utf-8") as file:
+        file.write(req.text)
+
+    with open(ratings_path, "r", encoding="utf-8") as original_file, open(
+        clean_ratings_path, "w+", encoding="utf-8"
+    ) as clean_file:
+        lines: list[str] = original_file.readlines()[1:]
+        clean_file.write("Rating,ID,Title,Title Slug\n")
+        clean_lines: list[str] = [
+            f'{components[0]},{components[1]},"{components[2]}",{components[4]}\n'
+            for line in lines
+            if (components := line.strip().split("\t"))
+        ]
+        clean_file.writelines(clean_lines)
+except requests.RequestException as e:
+    print(f"Error fetching ratings data: {e}")
 
 
-data = json.loads(r.text)
-df = pd.read_json(r.text)
+try:
+    response: Response = requests.get(url, headers=headers, timeout=5)
+    data: Model = Model.model_validate_json(response.text)
+    data_dict: Dict[str, Any] = data.model_dump()
+except (requests.RequestException, json.JSONDecodeError, AttributeError) as e:
+    print(f"Error fetching problem data: {e}")
+    data_dict = {}
+
+
 df1 = pd.json_normalize(data, record_path=["stat_status_pairs"])
 
 # df1.columns Index(['status', 'paid_only', 'is_favor', 'frequency', 'progress',
