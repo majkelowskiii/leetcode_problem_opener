@@ -116,9 +116,7 @@ class Leetcode:
         # root.bind("<Right>", self.show_next_prob())
 
     def set_by_index(self):
-        if self.problem_index < 0:
-            self.problem_index = 0
-
+        self.problem_index = max(self.problem_index, 0)
         if self.problem_index > len(self.df) - 1:
             self.problem_index = len(self.df) - 1
 
