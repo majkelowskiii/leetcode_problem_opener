@@ -29,6 +29,8 @@
 
 # ^ all this but leetcode gets calls from API/JS so it doesnt work :(
 
+# TODO: call with current username
+
 import json
 from pathlib import Path
 from typing import Any, Dict
@@ -131,67 +133,13 @@ except KeyError as e:
 
 
 try:
-    response: Response = requests.get(url, headers=headers, timeout=5)
-    data: Model = Model.model_validate_json(response.text)
-    data_dict: Dict[str, Any] = data.model_dump()
-except (requests.RequestException, json.JSONDecodeError, AttributeError) as e:
-    print(f"Error fetching problem data: {e}")
-    data_dict = {}
-
-
-try:
-    df1: pd.DataFrame = pd.json_normalize(data_dict, record_path=["stat_status_pairs"])
-    # df1.columns Index(['status', 'paid_only', 'is_favor', 'frequency', 'progress',
-    #       'stat.question_id', 'stat.question__article__live',
-    #       'stat.question__article__slug',
-    #       'stat.question__article__has_video_solution', 'stat.question__title',
-    #       'stat.question__title_slug', 'stat.question__hide', 'stat.total_acs',
-    #       'stat.total_submitted', 'stat.frontend_question_id',
-    #       'stat.is_new_question', 'difficulty.level'],
-    #      dtype='object')
-
-    # stat.frontend_question_id -> index order
-    # stat.question_id -> ???
-
-    # stat.question_id                                           2500
-    # stat.question__title_slug    minimum-costs-using-the-train-line
-    # stat.frontend_question_id                                  2361
-
-    #'status' = {'ac':'accomplished', 'notac':'submitted but not done', 'None':'not tried'}
-
-    headers: list[str] = [
-        "stat.frontend_question_id",
-        "stat.question__title",
-        "stat.question__title_slug",
-        "difficulty.level",
-        "paid_only",
-        "status",
+    df3: pd.DataFrame = pd.read_csv(clean_ratings_path)
+    df4: pd.DataFrame = df3.merge(df2, how="left", on="ID")
+    # 6 or so rows have different title by one hyphen, so we need to filter that out
+    headers = ["Rating", "ID", "Title", "Title Slug", "Difficulty", "premium", "status"]
+    df4 = df4.rename(columns={"Title_x": "Title", "Title Slug_x": "Title Slug"})[
+        headers
     ]
-    df2: pd.DataFrame = df1[headers].rename(
-        columns={
-            "stat.frontend_question_id": "ID",
-            "stat.question__title": "Title",
-            "stat.question__title_slug": "Title Slug",
-            "difficulty.level": "Difficulty",
-            "paid_only": "premium",
-        }
-    )
-
-    diff_dict: Dict[int, str] = {1: "Easy", 2: "Medium", 3: "Hard"}
-    df2 = df2.sort_values(by="ID").replace({"Difficulty": diff_dict})
-
-    df2.to_csv(problem_list_path, index=False)
-except KeyError as e:
-    print(f"Error processing problem data: {e}")
-
-
-df3 = pd.read_csv(clean_ratings_path)
-
-df4 = df3.merge(df2, how="left", on="ID")
-
-# 6 or so rows have different title by one hyphen, so we need to filter that out
-headers = ["Rating", "ID", "Title_x", "Title Slug_x", "Difficulty", "premium", "status"]
-df4 = pd.DataFrame(df4, columns=headers)
-df4 = df4.rename(columns={"Title_x": "Title", "Title Slug_x": "Title Slug"})
-
-df4.to_csv(path_or_buf=data_output_path, index=False)
+    df4.to_csv(data_output_path, index=False)
+except (FileNotFoundError, pd.errors.EmptyDataError) as e:
+    print(f"Error merging data: {e}")
