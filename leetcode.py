@@ -2,17 +2,16 @@
 
 import webbrowser
 from os import getcwd
-from tkinter import ttk, StringVar, BooleanVar, Tk, N, W, E, S
+from tkinter import BooleanVar, E, N, S, StringVar, Tk, W, ttk
+from typing import Literal
 
 import pandas as pd
 
 
 class Leetcode:
-
-    def __init__(self, root):
-
+    def __init__(self, root) -> None:
         self.read_ratings()
-        self.df = self.data
+        self.df: pd.DataFrame = self.data
         self.set_longest_title()
 
         root.title("Leetcode problem opener")
@@ -60,7 +59,10 @@ class Leetcode:
         goto_entry.grid(column=5, row=3, sticky=(W, E))
 
         self.goto_combovar = StringVar()
-        self.goto_combovar_values = ("ID", "Problem index")
+        self.goto_combovar_values: tuple[Literal["ID"], Literal["Problem index"]] = (
+            "ID",
+            "Problem index",
+        )
         goto_combo = ttk.Combobox(
             mainframe, textvariable=self.goto_combovar, width=15, state="readonly"
         )
@@ -115,8 +117,8 @@ class Leetcode:
         # root.bind("<Left>", self.show_prev_prob())
         # root.bind("<Right>", self.show_next_prob())
 
-    def set_by_index(self):
-        self.problem_index = max(self.problem_index, 0)
+    def set_by_index(self) -> None:
+        self.problem_index: int = max(self.problem_index, 0)
         self.problem_index = min(self.problem_index, len(self.df) - 1)
         self.problem_id.set(self.df["ID"].iloc[self.problem_index])
         self.problem_name.set(self.df["Title"].iloc[self.problem_index])
@@ -125,24 +127,24 @@ class Leetcode:
         )
         self.problem_diff.set(self.df["Difficulty"].iloc[self.problem_index])
 
-    def set_by_ID(self):
+    def set_by_ID(self) -> None:
         number = int(self.goto_choice.get())  # 0-indexed vs 1-indexed
 
-        index = self.df.index[self.df["ID"] == number]
+        index: pd.Index = self.df.index[self.df["ID"] == number]
 
         if not index.empty:
             self.problem_index = index[0]
             self.set_by_index()
 
-    def goto_problem(self):
+    def goto_problem(self) -> None:
         try:
-            number = int(self.goto_choice.get()) - 1
+            number: int = int(self.goto_choice.get()) - 1
         except ValueError:
             return
 
         # todo - validation https://tkdocs.com/tutorial/widgets.html#entry
 
-        label = self.goto_combovar.get()
+        label: str = self.goto_combovar.get()
 
         if label == self.goto_combovar_values[0]:  # self.goto_combovar_values == "ID"
             self.set_by_ID()
@@ -154,43 +156,42 @@ class Leetcode:
                 self.problem_index = number
                 self.set_by_index()
 
-    def set_longest_title(self):
+    def set_longest_title(self) -> None:
         # get there by index - useful for extracting title itself
         # idx = self.df.Title.str.len().idxmax()
         # longest_title = self.df["Title"][idx]
         # len(longest_title)
 
-        lngst_title = self.df.Title.str.len().max()
+        lngst_title: int = self.df.Title.str.len().max()
         # same as self.df["Title"].str.len().max()
 
-        self.longest_title = lngst_title
+        self.longest_title: int = lngst_title
 
-    def read_ratings(self):
-        path = getcwd() + "/data/" + "data.txt"
-        self.data = pd.read_csv(path)
+    def read_ratings(self) -> None:
+        path: str = getcwd() + "/data/" + "data.txt"
+        self.data: pd.DataFrame = pd.read_csv(path)
 
-    def save_ratings(self):
+    def save_ratings(self) -> None:
         # TODO document why this method is empty
         pass
 
-    def open_problem(self):
+    def open_problem(self) -> None:
         problem_slug = self.df["Title Slug"].iloc[
             self.problem_index
         ]  # 0-indexed vs 1-indexed
         urlpath = "https:/www.leetcode.com/problems/" + problem_slug
         webbrowser.open(urlpath)
 
-    def show_next_prob(self):
+    def show_next_prob(self) -> None:
         self.problem_index += 1
         self.set_by_index()
 
-    def show_prev_prob(self):
+    def show_prev_prob(self) -> None:
         self.problem_index -= 1
         self.set_by_index()
 
-    def set_show_status(self):
-
-        temp_df = self.data
+    def set_show_status(self) -> None:
+        temp_df: pd.DataFrame = self.data
 
         if not self.show_ac_var.get():
             temp_df = temp_df.loc[temp_df["status"] != "ac"]
