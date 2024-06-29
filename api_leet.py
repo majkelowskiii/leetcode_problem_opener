@@ -32,16 +32,21 @@
 # TODO: call with current username
 
 import json
-import os
+from pathlib import Path
 
 import pandas as pd
 import requests
 
 url = "https://leetcode.com/api/problems/algorithms/"
+data_dir: Path = Path.cwd() / "data"
+data_dir.mkdir(parents=True, exist_ok=True)
+cookie_path: Path = data_dir / "cookie.txt"
+clean_ratings_path: Path = data_dir / "ratings_clean.txt"
+problem_list_path: Path = data_dir / "problem_list.txt"
+data_output_path: Path = data_dir / "data.txt"
 
 try:
-    path = os.getcwd() + "/data/" + "cookie.txt"
-    with open(path, "r") as file:
+    with open(cookie_path, "r") as file:
         cookie = file.read()
 
     # cookie expired after few weeks
@@ -102,11 +107,9 @@ df2 = df2.sort_values(by="ID")
 diff_dict = {1: "Easy", 2: "Medium", 3: "Hard"}
 df2["Difficulty"].replace(diff_dict, inplace=True)
 
-path = os.getcwd() + "/data/" + "problem_list.txt"
-df2.to_csv(path_or_buf=path, index=False)
+df2.to_csv(path_or_buf=problem_list_path, index=False)
 
-path = os.getcwd() + "/data/" + "ratings_clean.txt"
-df3 = pd.read_csv(path)
+df3 = pd.read_csv(clean_ratings_path)
 
 df4 = df3.merge(df2, how="left", on="ID")
 
@@ -115,5 +118,4 @@ headers = ["Rating", "ID", "Title_x", "Title Slug_x", "Difficulty", "premium", "
 df4 = pd.DataFrame(df4, columns=headers)
 df4 = df4.rename(columns={"Title_x": "Title", "Title Slug_x": "Title Slug"})
 
-path = os.getcwd() + "/data/" + "data.txt"
-df4.to_csv(path_or_buf=path, index=False)
+df4.to_csv(path_or_buf=data_output_path, index=False)
