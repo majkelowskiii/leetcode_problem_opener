@@ -117,9 +117,7 @@ class Leetcode:
 
     def set_by_index(self):
         self.problem_index = max(self.problem_index, 0)
-        if self.problem_index > len(self.df) - 1:
-            self.problem_index = len(self.df) - 1
-
+        self.problem_index = min(self.problem_index, len(self.df) - 1)
         self.problem_id.set(self.df["ID"].iloc[self.problem_index])
         self.problem_name.set(self.df["Title"].iloc[self.problem_index])
         self.problem_progress.set(
