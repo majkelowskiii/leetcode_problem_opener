@@ -217,6 +217,7 @@ class Leetcode:
         self.set_by_index()
 
 
-root = Tk()
-Leetcode(root)
-root.mainloop()
+if __name__ == "__main__":
+    root = Tk()
+    Leetcode(root)
+    root.mainloop()
