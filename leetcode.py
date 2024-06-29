@@ -142,11 +142,11 @@ class Leetcode:
 
         if label == self.goto_combovar_values[0]:  # self.goto_combovar_values == "ID"
             self.set_by_ID()
-
         elif (
-            label == self.goto_combovar_values[1]
-        ):  # self.goto_combovar_values == "Index"
-            if number > 0 and number < len(self.df):
+            label
+            == self.goto_combovar_values[1]  # self.goto_combovar_values == "Index"
+        ):
+            if 0 < number < len(self.df):
                 self.problem_index = number
                 self.set_by_index()
 
