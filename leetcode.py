@@ -2,8 +2,7 @@
 
 import webbrowser
 from os import getcwd
-from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, StringVar, BooleanVar, Tk, N, W, E, S
 
 import pandas as pd
 
