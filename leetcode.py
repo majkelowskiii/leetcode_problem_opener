@@ -135,7 +135,11 @@ class Leetcode:
             self.set_by_index()
 
     def goto_problem(self):
-        number = int(self.goto_choice.get()) - 1  # 0-indexed vs 1-indexed
+        try:
+            number = int(self.goto_choice.get()) - 1
+        except ValueError:
+            return
+
         # todo - validation https://tkdocs.com/tutorial/widgets.html#entry
 
         label = self.goto_combovar.get()
@@ -146,7 +150,7 @@ class Leetcode:
             label
             == self.goto_combovar_values[1]  # self.goto_combovar_values == "Index"
         ):
-            if 0 < number < len(self.df):
+            if 0 <= number <= len(self.df):
                 self.problem_index = number
                 self.set_by_index()
 
