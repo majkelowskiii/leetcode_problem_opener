@@ -32,14 +32,18 @@
 # TODO: call with current username
 
 import json
+import os
+import sys
 from pathlib import Path
 from typing import Any, Dict
 
 import pandas as pd
 import requests
 from model import Model
+from pydantic_core import ValidationError
 from requests import Response
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 url = "https://leetcode.com/api/problems/algorithms/"
 ratings_url = "https://raw.githubusercontent.com/zerotrac/leetcode_problem_rating/main/ratings.txt"
 data_dir: Path = Path.cwd() / "data"
@@ -76,15 +80,20 @@ try:
         clean_file.writelines(clean_lines)
 except requests.RequestException as e:
     print(f"Error fetching ratings data: {e}")
-
+    sys.exit(1)
 
 try:
     response: Response = requests.get(url, headers=headers, timeout=5)
     data: Model = Model.model_validate_json(response.text)
     data_dict: Dict[str, Any] = data.model_dump()
-except (requests.RequestException, json.JSONDecodeError, AttributeError) as e:
+except (
+    requests.RequestException,
+    json.JSONDecodeError,
+    AttributeError,
+    ValidationError,
+) as e:
     print(f"Error fetching problem data: {e}")
-    data_dict = {}
+    sys.exit(1)
 
 try:
     df1: pd.DataFrame = pd.json_normalize(data_dict, record_path=["stat_status_pairs"])
@@ -130,7 +139,7 @@ try:
     df2.to_csv(problem_list_path, index=False)
 except KeyError as e:
     print(f"Error processing problem data: {e}")
-
+    sys.exit(1)
 
 try:
     df3: pd.DataFrame = pd.read_csv(clean_ratings_path)
@@ -143,3 +152,4 @@ try:
     df4.to_csv(data_output_path, index=False)
 except (FileNotFoundError, pd.errors.EmptyDataError) as e:
     print(f"Error merging data: {e}")
+    sys.exit(1)
