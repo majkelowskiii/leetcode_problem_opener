@@ -127,7 +127,7 @@ class Leetcode:
         )
         self.problem_diff.set(self.df["Difficulty"].iloc[self.problem_index])
 
-    def set_by_ID(self) -> None:
+    def set_by_id(self) -> None:
         number = int(self.goto_choice.get())  # 0-indexed vs 1-indexed
 
         index: pd.Index = self.df.index[self.df["ID"] == number]
@@ -147,7 +147,7 @@ class Leetcode:
         label: str = self.goto_combovar.get()
 
         if label == self.goto_combovar_values[0]:  # self.goto_combovar_values == "ID"
-            self.set_by_ID()
+            self.set_by_id()
         elif (
             label
             == self.goto_combovar_values[1]  # self.goto_combovar_values == "Index"
