@@ -192,7 +192,7 @@ class Leetcode:
             temp_df = temp_df.loc[temp_df["status"] != "ac"]
 
         if not self.show_premium_var.get():
-            temp_df = temp_df.loc[temp_df["premium"] == False]
+            temp_df = temp_df.loc[~temp_df["premium"]]
 
         diff = []
 
