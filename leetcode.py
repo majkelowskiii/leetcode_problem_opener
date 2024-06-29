@@ -121,8 +121,8 @@ class Leetcode:
         self.problem_id.set(self.df["ID"].iloc[self.problem_index])
         self.problem_name.set(self.df["Title"].iloc[self.problem_index])
         self.problem_progress.set(
-            str(self.problem_index + 1) + " / " + str(len(self.df))
-        )  # 0-indexed vs 1-indexed
+            f"{str(self.problem_index + 1)} / {len(self.df)}"  # 0-indexed vs 1-indexed
+        )
         self.problem_diff.set(self.df["Difficulty"].iloc[self.problem_index])
 
     def set_by_ID(self):
