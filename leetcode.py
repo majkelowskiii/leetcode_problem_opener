@@ -166,6 +166,7 @@ class Leetcode:
         self.data = pd.read_csv(path)
 
     def save_ratings(self):
+        # TODO document why this method is empty
         pass
 
     def open_problem(self):
